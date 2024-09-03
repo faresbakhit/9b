@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>9B - /u/{{.Name}}</title>
+</head>
+<body>
+<h1>/u/{{.Name}}</h1>
+{{ if .IsSelf -}}
+<form method="post">
+  <table>
+    <tbody>
+      <tr>
+        <td><label for="current_password">Current Password:</label></td>
+        <td><input
+              type="password"
+              name="current_password"
+              required 
+              autocomplete="current-password" />
+        </td>
+      </tr>
+      <tr>
+        <td><label for="new_password">New Password:</label></td>
+        <td><input
+              type="password"
+              name="new_password"
+              required 
+              autocomplete="new-password" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <input type="submit" value="Change password">
+</form>
+{{ end -}}
+{{ if .Err -}}
+<p>{{ .Err }}</p>
+{{ end -}}
+</body>
+</html>

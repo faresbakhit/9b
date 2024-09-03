@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>9B - Sign Up</title>
+</head>
+<body>
+<h1>Sign Up</h1>
+<p>Or {{ if .Goto -}}
+<a href="/login?goto={{ .Goto }}">
+{{- else -}}
+<a href="/login">
+{{- end -}}
+log in</a> to your account.</p>
+<form method="post">
+  {{ if .Goto -}}
+  <input type="hidden" name="goto" value="{{ .Goto }}">
+  {{ end -}}
+  <table>
+    <tbody>
+      <tr>
+        <td><label for="username">Username:</label></td>
+        <td><input
+              type="text"
+              name="username"
+              pattern="^~?[a-z0-9]+([\.\-][a-z0-9]+)*@?[a-z0-9][a-z0-9]+([\.\-][a-z0-9]+)*$"
+              required
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              autofocus="true" />
+        </td>
+      </tr>
+      <tr>
+        <td><label for="password">Password:</label></td>
+        <td><input
+              type="password"
+              name="password"
+              required 
+              autocomplete="new-password" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <input type="submit" value="Sign up">
+</form>
+{{ if .Err -}}
+<p>{{ .Err }}</p>
+{{ end -}}
+</body>
+</html>

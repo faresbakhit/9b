@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Log In</title>
+</head>
+<body>
+<h1>Log In</h1>
+<p>Or {{ if .Goto -}}
+<a href="/signup?goto={{ .Goto }}">
+{{- else -}}
+<a href="/signup">
+{{- end -}}
+sign up</a> for a new account.</p>
+<form method="post">
+  {{ if .Goto -}}
+  <input type="hidden" name="goto" value="{{ .Goto }}">
+  {{ end -}}
+  <table>
+    <tbody>
+      <tr>
+        <td><label for="username">Username:</label></td>
+        <td><input
+              type="text"
+              name="username"
+              required
+              autocorrect="off"
+              spellcheck="false"
+              autocapitalize="off"
+              autofocus="true" />
+        </td>
+      </tr>
+      <tr>
+        <td><label for="password">Password:</label></td>
+        <td><input
+              type="password"
+              name="password"
+              required 
+              autocomplete="current-password" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <input type="submit" value="Log in">
+</form>
+{{ if .Err -}}
+<p>{{ .Err }}</p>
+{{ end -}}
+</body>
+</html>
