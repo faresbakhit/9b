@@ -14,17 +14,23 @@ import (
 
 type User struct {
 	Id             int64
-	Name           string
+	Username       string
 	HashedPassword []byte
 	CreatedAt      *time.Time
 	SessionToken   sql.NullString
 }
 
-var ErrInvalidUsername = errors.New("invalid username")
+var UserErrUsername = errors.New("invalid username")
 
-func (s *Store) CreateUser(name string, hashedPassword []byte) (*User, error) {
-	if !isUsernameValid(name) {
-		return nil, ErrInvalidUsername
+func (s *Store) UserNew(username string, hashedPassword []byte) (*User, error) {
+	// There is no password "requirements" validation, as I think, in my humble
+	// opinion, that this is not a software's job. The user should be the one
+	// to blame for weak passwords and rejecting them will only make the user,
+	// who previous chose a weak password to choose the next weak password
+	// within the arbitrary constraints a software has put.
+
+	if !isUsernameValid(username) {
+		return nil, UserErrUsername
 	}
 
 	sessionToken, err := generateSessionToken()
@@ -32,26 +38,24 @@ func (s *Store) CreateUser(name string, hashedPassword []byte) (*User, error) {
 		return nil, err
 	}
 
-	hashedPassword, err = bcrypt.GenerateFromPassword(hashedPassword, config.PASSWORD_BCRYPT_COST)
+	hashedPassword, err = generateHashedPassword(hashedPassword)
 	if err != nil {
 		return nil, err
 	}
 
 	user := User{
-		Name:           name,
+		Username:       username,
 		HashedPassword: hashedPassword,
 		SessionToken:   sql.NullString{String: sessionToken, Valid: true},
 	}
 
 	query := `
 		INSERT INTO user
-		(name, hashed_password, session_token)
-		VALUES
-		(?, ?, ?)
-		RETURNING
-		id, created_at`
+		(username, hashed_password, session_token)
+		VALUES (?, ?, ?)
+		RETURNING id, created_at`
 
-	row := s.db.QueryRow(query, name, hashedPassword, sessionToken)
+	row := s.db.QueryRow(query, username, hashedPassword, sessionToken)
 	if err := row.Scan(&user.Id, &user.CreatedAt); err != nil {
 		return nil, err
 	}
@@ -59,12 +63,12 @@ func (s *Store) CreateUser(name string, hashedPassword []byte) (*User, error) {
 	return &user, nil
 }
 
-func (s *Store) UpdateUserPassword(user *User, currentPassword, newPassword []byte) error {
-	if err := bcrypt.CompareHashAndPassword(user.HashedPassword, currentPassword); err != nil {
+func (s *Store) UserUpdatePassword(user *User, currentPassword, newPassword []byte) error {
+	if err := compareHashAndPassword(user.HashedPassword, currentPassword); err != nil {
 		return err
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword(newPassword, config.PASSWORD_BCRYPT_COST)
+	hashedPassword, err := generateHashedPassword(newPassword)
 	if err != nil {
 		return err
 	}
@@ -81,40 +85,37 @@ func (s *Store) UpdateUserPassword(user *User, currentPassword, newPassword []by
 	return nil
 }
 
-func (s *Store) UpdateUserSessionToken(name string, password []byte) (token string, err error) {
+func (s *Store) UserUpdateSessionToken(username string, password []byte) (sessionToken string, err error) {
 	var hashedPassword []byte
 
 	query := `
 		SELECT (hashed_password)
 		FROM user
-		WHERE name = ?`
-
-	row := s.db.QueryRow(query, name)
+		WHERE username = ?`
+	row := s.db.QueryRow(query, username)
 	if err = row.Scan(&hashedPassword); err != nil {
-		return "", err
+		return
 	}
 
-	sessionToken, err := generateSessionToken()
+	sessionToken, err = generateSessionToken()
 	if err != nil {
-		return "", err
+		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword(hashedPassword, password); err != nil {
-		return "", err
+	if err = compareHashAndPassword(hashedPassword, password); err != nil {
+		return
 	}
 
 	query = `
 		UPDATE user
 		SET session_token = ?
-		WHERE name = ?`
-	if _, err := s.db.Exec(query, sessionToken, name); err != nil {
-		return "", err
-	}
+		WHERE username = ?`
+	_, err = s.db.Exec(query, sessionToken, username)
 
-	return sessionToken, nil
+	return
 }
 
-func (s *Store) InvalidateUserSessionToken(sessionToken string) error {
+func (s *Store) UserDeleteSessionToken(sessionToken string) error {
 	query := `
 		UPDATE user
 		SET session_token = NULL
@@ -126,13 +127,13 @@ func (s *Store) InvalidateUserSessionToken(sessionToken string) error {
 	return nil
 }
 
-func (s *Store) GetUserBySessionToken(sessionToken string) (*User, error) {
+func (s *Store) UserFromSessionToken(sessionToken string) (*User, error) {
 	user := User{}
 
 	row := s.db.QueryRow("SELECT * FROM user WHERE session_token = ?", sessionToken)
 	if err := row.Scan(
 		&user.Id,
-		&user.Name,
+		&user.Username,
 		&user.HashedPassword,
 		&user.CreatedAt,
 		&user.SessionToken); err != nil {
@@ -142,13 +143,13 @@ func (s *Store) GetUserBySessionToken(sessionToken string) (*User, error) {
 	return &user, nil
 }
 
-func (s *Store) GetUserByName(name string) (*User, error) {
+func (s *Store) UserFromUsername(username string) (*User, error) {
 	user := User{}
 
-	row := s.db.QueryRow("SELECT * FROM user WHERE name = ?", name)
+	row := s.db.QueryRow("SELECT * FROM user WHERE username = ?", username)
 	if err := row.Scan(
 		&user.Id,
-		&user.Name,
+		&user.Username,
 		&user.HashedPassword,
 		&user.CreatedAt,
 		&user.SessionToken); err != nil {
@@ -157,6 +158,14 @@ func (s *Store) GetUserByName(name string) (*User, error) {
 
 	return &user, nil
 
+}
+
+func compareHashAndPassword(hashedPassword, password []byte) error {
+	return bcrypt.CompareHashAndPassword(hashedPassword, password)
+}
+
+func generateHashedPassword(password []byte) ([]byte, error) {
+	return bcrypt.GenerateFromPassword(password, config.PASSWORD_BCRYPT_COST)
 }
 
 func generateSessionToken() (string, error) {
@@ -169,7 +178,7 @@ func generateSessionToken() (string, error) {
 }
 
 // Specification for a correct username:
-//   - Length must be in [USERNAME_MINIMUM_LENGTH, USERNAME_MAXIMUM_LENGTH].
+//   - Length must be in [3, 21].
 //   - Must have one or more character from the sets `[a-z]' and `[0-9]'.
 //   - May include zero or more dashes (`-') or dots (`.'), but not at the
 //     start, nor the end, nor before or after a dash (`-') or a dot (`.')
@@ -178,7 +187,7 @@ func generateSessionToken() (string, error) {
 //     end, nor after a tilde.
 //   - May start with at most one tilde (`~').
 //
-// No, This is not email validation. I just wrote it in hope that any
+// No, This is not email vali_ation. I just wrote it in hope that any
 // username within those constraints will look elegant and easy to type.
 func isUsernameValid(username string) bool {
 	n := len(username)
@@ -192,7 +201,7 @@ func isUsernameValid(username string) bool {
 	bn := username[n-1]
 
 	if (notLowerAlphaNum(b1) && b1 != '~') ||
-		(b1 == '~' && notLowerAlphaNum(b2)) ||
+		(notLowerAlphaNum(b2) && b1 == '~') ||
 		notLowerAlphaNum(bn) {
 		return false
 	}
@@ -200,15 +209,15 @@ func isUsernameValid(username string) bool {
 	ateAtSign := false
 	for i := 1; i < n-1; i++ {
 		bi := username[i]
-		bim1 := username[i-1]
-		bip1 := username[i+1]
+		bin := username[i-1]
+		bip := username[i+1]
 		if bi == '@' {
-			if ateAtSign || anyIsDashOrDot(bim1, bip1) {
+			if ateAtSign || anyIsDashOrDot(bin, bip) {
 				return false
 			}
 			ateAtSign = true
 		} else if anyIsDashOrDot(bi) {
-			if anyIsDashOrDot(bim1, bip1) {
+			if anyIsDashOrDot(bin, bip) {
 				return false
 			}
 		} else if notLowerAlphaNum(bi) {

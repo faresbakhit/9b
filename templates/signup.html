@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>9B - Sign Up</title>
 </head>
 <body>
@@ -23,12 +24,12 @@ log in</a> to your account.</p>
         <td><input
               type="text"
               name="username"
-              pattern="^~?[a-z0-9]+([\.\-][a-z0-9]+)*@?[a-z0-9][a-z0-9]+([\.\-][a-z0-9]+)*$"
+              pattern="^~?[a-z0-9](?:[-.]?[a-z0-9]+)*(@[a-z0-9](?:[-.]?[a-z0-9]+)?)?$"
               required
               autocorrect="off"
               spellcheck="false"
               autocapitalize="off"
-              autofocus="true" />
+              autofocus="true">
         </td>
       </tr>
       <tr>
@@ -37,7 +38,7 @@ log in</a> to your account.</p>
               type="password"
               name="password"
               required 
-              autocomplete="new-password" />
+              autocomplete="new-password">
         </td>
       </tr>
     </tbody>

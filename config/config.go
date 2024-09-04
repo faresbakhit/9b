@@ -1,8 +1,10 @@
-// Runtime configuration files are hard to manage, hard to get right, and
-// needless complexity for any kind of HTTP service.
+// Runtime configuration files cost us:
+// - Extra input at runtime. One or more files!
+// - Needless arguments about the 'right' langugage.
+// - Dealing with languages defined by sheer luck (or not at all).
 //
-// Instead, using centralized compile-time data for configuration is the
-// way to go, following https://suckless.org.
+// Using centralized compile-time data for configuration is the only correct
+// way to manage software configuration, following https://suckless.org.
 
 package config
 
@@ -10,10 +12,11 @@ import "golang.org/x/crypto/bcrypt"
 
 const (
 	HTTP_SERVER_ADDR     = ":8000"
-	SQLITE_SOURCE_NAME   = "nineb.db"
-	PAGES_GLOB_PATTERN   = "pages/*"
-	TLS_CERTIFICATE_FILE = ""
-	TLS_PRIVATE_KEY_FILE = ""
+	PAGES_GLOB_PATTERN   = "templates/*.html"
+	PAGES_RELOAD         = false
 	PASSWORD_BCRYPT_COST = bcrypt.DefaultCost
 	SESSION_TOKEN_LENGTH = 16
+	SQLITE_DATA_SOURCE   = "9b.db"
+	TLS_CERTIFICATE_FILE = ""
+	TLS_PRIVATE_KEY_FILE = ""
 )

@@ -16,12 +16,12 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /signup", s.SignupPage)
-	mux.HandleFunc("POST /signup", s.Signup)
-	mux.HandleFunc("GET /login", s.LoginPage)
-	mux.HandleFunc("POST /login", s.Login)
-	mux.HandleFunc("GET /u/{name}", s.UserPage)
-	mux.HandleFunc("POST /u/{name}", s.UpdatePassword)
+	mux.HandleFunc(s.SignupGETPattern(), s.SignupGET)
+	mux.HandleFunc(s.SignupPOSTPattern(), s.SignupPOST)
+	mux.HandleFunc(s.LoginGETPattern(), s.LoginGETHandler)
+	mux.HandleFunc(s.LoginPOSTPattern(), s.LoginPOSTHandler)
+	mux.HandleFunc(s.UserGETPattern(), s.UserGETHandler)
+	mux.HandleFunc(s.UserPOSTPattern(), s.UserPOSTHandler)
 	mux.HandleFunc("GET /protected", s.ProtectedPage)
 
 	srv := &http.Server{
@@ -32,7 +32,7 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	log.Printf("Listening on %s", srv.Addr)
+	log.Printf("server listening on %s", srv.Addr)
 
 	if config.TLS_CERTIFICATE_FILE == "" && config.TLS_PRIVATE_KEY_FILE == "" {
 		log.Fatal(srv.ListenAndServe())
