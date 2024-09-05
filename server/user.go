@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/faresbakhit/9b/store"
 	"github.com/faresbakhit/9b/views"
 )
 
@@ -22,7 +23,14 @@ func (s *Server) UserGETHandler(w http.ResponseWriter, r *http.Request) {
 		views.NotFound(w, "No such user.")
 		return
 	}
-	userPageData := views.UserData{Username: user.Username, CreatedAt: user.CreatedAt}
+	var posts []*store.UserPost
+	for post := range s.store.UserPostListFromUser(user.Id, 10, 0) {
+		posts = append(posts, post)
+	}
+	userPageData := views.UserData{
+		Posts:     posts,
+		Username:  user.Username,
+		CreatedAt: user.CreatedAt}
 	if self := s.getUser(r); self != nil && user.Id == self.Id {
 		userPageData.IsSelf = true
 	}

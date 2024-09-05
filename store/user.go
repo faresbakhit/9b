@@ -135,8 +135,8 @@ func (s *Store) UserFromSessionToken(sessionToken string) (*User, error) {
 		&user.Id,
 		&user.Username,
 		&user.HashedPassword,
-		&user.CreatedAt,
-		&user.SessionToken); err != nil {
+		&user.SessionToken,
+		&user.CreatedAt); err != nil {
 		return nil, err
 	}
 
@@ -151,8 +151,8 @@ func (s *Store) UserFromUsername(username string) (*User, error) {
 		&user.Id,
 		&user.Username,
 		&user.HashedPassword,
-		&user.CreatedAt,
-		&user.SessionToken); err != nil {
+		&user.SessionToken,
+		&user.CreatedAt); err != nil {
 		return nil, err
 	}
 

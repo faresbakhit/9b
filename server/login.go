@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/faresbakhit/9b/store"
 	"github.com/faresbakhit/9b/views"
@@ -9,6 +10,10 @@ import (
 
 func (s *Server) LoginPath() string {
 	return "/login"
+}
+
+func (s *Server) LoginPathWithGoto(gotoPath string) string {
+	return s.LoginPath() + "?goto=" + url.QueryEscape(gotoPath)
 }
 
 func (s *Server) LoginGETPattern() string {

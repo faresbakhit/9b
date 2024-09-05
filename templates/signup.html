@@ -1,11 +1,14 @@
+{{define "signup"}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>9B - Sign Up</title>
+  {{template "meta"}}
+  {{template "css"}}
+  <title>{{template "service_name"}} - Sign Up</title>
 </head>
 <body>
+<header class="container-fluid">{{template "nav"}}</header>
+<main class="container">
 <h1>Sign Up</h1>
 <p>Or {{ if .Goto -}}
 <a href="/login?goto={{ .Goto }}">
@@ -17,36 +20,34 @@ log in</a> to your account.</p>
   {{ if .Goto -}}
   <input type="hidden" name="goto" value="{{ .Goto }}">
   {{ end -}}
-  <table>
-    <tbody>
-      <tr>
-        <td><label for="username">Username:</label></td>
-        <td><input
-              type="text"
-              name="username"
-              pattern="^~?[a-z0-9](?:[-.]?[a-z0-9]+)*(@[a-z0-9](?:[-.]?[a-z0-9]+)?)?$"
-              required
-              autocorrect="off"
-              spellcheck="false"
-              autocapitalize="off"
-              autofocus="true">
-        </td>
-      </tr>
-      <tr>
-        <td><label for="password">Password:</label></td>
-        <td><input
-              type="password"
-              name="password"
-              required 
-              autocomplete="new-password">
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <fieldset>
+    <label for="username">
+      Username
+      <input
+            type="text"
+            name="username"
+            pattern="^~?[a-z0-9](?:[-.]?[a-z0-9]+)*(@[a-z0-9](?:[-.]?[a-z0-9]+)?)?$"
+            required
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            autofocus="true">
+    </label>
+    <label for="password">
+      Password
+      <input
+            type="password"
+            name="password"
+            required 
+            autocomplete="new-password">
+    </label>
+  </fieldset>
   <input type="submit" value="Sign up">
 </form>
 {{ if .Err -}}
 <p>{{ .Err }}</p>
 {{ end -}}
+</main>
 </body>
 </html>
+{{end}}

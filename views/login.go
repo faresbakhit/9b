@@ -8,5 +8,5 @@ type LoginData struct {
 }
 
 func Login(w http.ResponseWriter, data LoginData, statusCode int) {
-	renderPage(w, "login.html", data, statusCode)
+	renderPage(w, "login", data, statusCode)
 }

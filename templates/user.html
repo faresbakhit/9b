@@ -1,41 +1,62 @@
+{{define "user"}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>9B - /u/{{.Username}}</title>
+  {{template "meta"}}
+  {{template "css"}}
+  <title>{{template "service_name"}} - /u/{{.Username}}</title>
 </head>
 <body>
-<h1>/u/{{.Username}}</h1>
-{{ if .IsSelf -}}
-<form method="post">
-  <table>
-    <tbody>
-      <tr>
-        <td><label for="current_password">Current Password:</label></td>
-        <td><input
-              type="password"
-              name="current_password"
-              required 
-              autocomplete="current-password" />
-        </td>
-      </tr>
-      <tr>
-        <td><label for="new_password">New Password:</label></td>
-        <td><input
-              type="password"
-              name="new_password"
-              required 
-              autocomplete="new-password" />
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <input type="submit" value="Change password">
-</form>
-{{ end -}}
-{{ if .Err -}}
+<main class="container-fluid">
+{{template "nav"}}
+<!-- {{if .IsSelf -}} -->
+<!-- <form method="post"> -->
+  <!-- <table> -->
+    <!-- <tbody> -->
+      <!-- <tr> -->
+        <!-- <td><label for="current_password">Current Password:</label></td> -->
+        <!-- <td><input -->
+              <!-- type="password" -->
+              <!-- name="current_password" -->
+              <!-- required --> 
+              <!-- autocomplete="current-password" /> -->
+        <!-- </td> -->
+      <!-- </tr> -->
+      <!-- <tr> -->
+        <!-- <td><label for="new_password">New Password:</label></td> -->
+        <!-- <td><input -->
+              <!-- type="password" -->
+              <!-- name="new_password" -->
+              <!-- required --> 
+              <!-- autocomplete="new-password" /> -->
+        <!-- </td> -->
+      <!-- </tr> -->
+    <!-- </tbody> -->
+  <!-- </table> -->
+  <!-- <input type="submit" value="Change password"> -->
+<!-- </form> -->
+<!-- {{end -}} -->
+{{if .Err -}}
 <p>{{ .Err }}</p>
-{{ end -}}
+{{end -}}
+{{range $val := .Posts -}}
+<hgroup>
+<h2>
+{{- if eq $val.Url "" -}}
+{{$val.Title}}
+{{- else -}}
+<a href={{$val.Url}}>{{$val.Title}}</a>
+{{- end -}}
+</h2>
+<p>{{- if eq $val.Score 1}}{{$val.Score}} point
+{{- else}}{{$val.Score}} points
+{{- end}} by <a href="{{$.Username}}">{{$.Username}}</a></p>
+</hgroup>
+{{- range $p :=  $val.Body | split "\n" -}}
+<p>{{$p}}</p>
+{{end -}}
+{{end -}}
+</main>
 </body>
 </html>
+{{end}}

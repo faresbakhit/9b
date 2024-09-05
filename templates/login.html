@@ -1,11 +1,14 @@
+{{define "login"}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Log In</title>
+{{template "meta"}}
+{{template "css"}}
+<title>{{template "service_name"}} - Log In</title>
 </head>
 <body>
+<header class="container-fluid">{{template "nav"}}</header>
+<main class="container">
 <h1>Log In</h1>
 <p>Or {{ if .Goto -}}
 <a href="/signup?goto={{ .Goto }}">
@@ -17,35 +20,33 @@ sign up</a> for a new account.</p>
   {{ if .Goto -}}
   <input type="hidden" name="goto" value="{{ .Goto }}">
   {{ end -}}
-  <table>
-    <tbody>
-      <tr>
-        <td><label for="username">Username:</label></td>
-        <td><input
-              type="text"
-              name="username"
-              required
-              autocorrect="off"
-              spellcheck="false"
-              autocapitalize="off"
-              autofocus="true" />
-        </td>
-      </tr>
-      <tr>
-        <td><label for="password">Password:</label></td>
-        <td><input
-              type="password"
-              name="password"
-              required 
-              autocomplete="current-password" />
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <fieldset>
+    <label for="username">
+      Username
+      <input
+            type="text"
+            name="username"
+            required
+            autocorrect="off"
+            spellcheck="false"
+            autocapitalize="off"
+            autofocus="true">
+    </label>
+    <label for="password">
+      Password
+      <input
+            type="password"
+            name="password"
+            required 
+            autocomplete="current-password">
+    </label>
+  </fieldset>
   <input type="submit" value="Log in">
 </form>
 {{ if .Err -}}
 <p>{{ .Err }}</p>
 {{ end -}}
+</main>
 </body>
 </html>
+{{end}}

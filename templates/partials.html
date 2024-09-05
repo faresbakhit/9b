@@ -1,0 +1,32 @@
+{{define "meta" -}}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+{{- end}}
+
+{{define "css" -}}
+  <link rel="stylesheet" href="/assets/css/pico.grey.min.css">
+  <link rel="stylesheet" href="/assets/css/custom.css">
+{{- end}}
+
+{{define "nav" -}}
+<nav>
+  <ul>
+    <li><strong>9B Forum</strong></li>
+  </ul>
+  <ul>
+    <li>
+      <details class="dropdown">
+        <summary>Account</summary>
+        <ul dir="rtl">
+          <li><a href="#">Profile</a></li>
+          <li><a href="#">Change Password</a></li>
+          <li><a href="#">Logout</a></li>
+        </ul>
+      </details>
+    </li>
+  </ul>
+</nav>
+{{- end}}
+
+{{define "service_name"}}9B{{end}}

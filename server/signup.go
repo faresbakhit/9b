@@ -45,7 +45,7 @@ func (s *Server) SignupPOST(w http.ResponseWriter, r *http.Request) {
 		data := views.SignupData{Goto: gotoValue}
 		if errors.Is(err, store.UserErrUsername) {
 			data.Err = "Username not within constraints."
-			views.Signup(w, data, http.StatusUnauthorized)
+			views.Signup(w, data, http.StatusUnprocessableEntity)
 			return
 		}
 		data.Err = "Username is taken."

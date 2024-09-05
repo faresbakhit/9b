@@ -14,15 +14,21 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer s.Close()
 
 	mux := http.NewServeMux()
+
 	mux.HandleFunc(s.SignupGETPattern(), s.SignupGET)
 	mux.HandleFunc(s.SignupPOSTPattern(), s.SignupPOST)
 	mux.HandleFunc(s.LoginGETPattern(), s.LoginGETHandler)
 	mux.HandleFunc(s.LoginPOSTPattern(), s.LoginPOSTHandler)
 	mux.HandleFunc(s.UserGETPattern(), s.UserGETHandler)
 	mux.HandleFunc(s.UserPOSTPattern(), s.UserPOSTHandler)
-	mux.HandleFunc("GET /protected", s.ProtectedPage)
+	mux.HandleFunc(s.CreatePostGETPattern(), s.CreatePostGETHandler)
+	mux.HandleFunc(s.CreatePostPOSTPattern(), s.CreatePostPOSTHandler)
+
+	mux.Handle(config.HTTP_PUBLIC_ROUTE, http.StripPrefix(config.HTTP_PUBLIC_ROUTE,
+		http.FileServer(http.Dir(config.HTTP_PUBLIC_DIRECTORY))))
 
 	srv := &http.Server{
 		Addr:         config.HTTP_SERVER_ADDR,

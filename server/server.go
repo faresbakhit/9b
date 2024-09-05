@@ -16,3 +16,7 @@ func NewServer() (Server, error) {
 	}
 	return Server{store}, nil
 }
+
+func (s *Server) Close() {
+	s.store.Close()
+}
