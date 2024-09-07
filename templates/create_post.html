@@ -1,66 +1,43 @@
 {{define "create_post"}}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-{{template "meta"}}
-{{template "css"}}
-<title>9B - Create Post</title>
-</head>
-<body>
-<header class="container-fluid">{{template "nav"}}</header>
-<main class="container">
-<h1>Create Post</h1>
-<form method="post">
-  <fieldset>
-    <label for="title">
-      Title
-      <input
-        type="text"
-        name="title"
-        required
-        size="50"
-        autofocus="true">
-    </label>
-    <label for="url">
-      Link
-      <input type="text" name="url">
-    </label>
-    <label for="body">
-      Body
-      <textarea name="body" rows="5"></textarea>
-    </label>    
-  </fieldset>
-  <input type="submit" value="Submit post">
-  <!-- <table> -->
-    <!-- <tbody> -->
-      <!-- <tr> -->
-        <!-- <td><label for="title">Title</label></td> -->
-        <!-- <td><input -->
-              <!-- type="text" -->
-              <!-- name="title" -->
-              <!-- required -->
-              <!-- size="50" -->
-              <!-- autofocus="true"> -->
-        <!-- </td> -->
-      <!-- </tr> -->
-      <!-- <tr> -->
-        <!-- <td><label for="url">Link</label></td> -->
-        <!-- <td><input type="text" name="url" size="50"></td> -->
-      <!-- </tr> -->
-      <!-- <tr> -->
-        <!-- <td>Body</td> -->
-        <!-- <td><textarea name="body" rows="10" cols="50"></textarea></td> -->
-      <!-- </tr> -->
-      <!-- <tr> -->
-        <!-- <td></td> -->
-        <!-- <td><input type="submit" value="Submit post"></td> -->
-      <!-- </tr> -->
-    <!-- </tbody> -->
-  <!-- </table> -->
-</form>
-{{ if .Err -}}
-<p>{{ .Err }}</p>
-{{ end -}}
-</body>
+  <head>
+    {{template "meta"}}
+    {{template "css"}}
+    <title>{{template "service_name"}} - Create Post</title>
+  </head>
+  <body>
+    <header class="container-fluid">{{template "nav" .}}</header>
+    <main class="container">
+      <h1>Create Post</h1>
+      <form method="post">
+        <fieldset>
+          <label for="title">
+            Title
+            <input
+              type="text"
+              name="title"
+              required
+              size="50"
+              autofocus="true">
+          </label>
+          <label for="url">
+            Link
+            <input type="text" name="url">
+          </label>
+          <label for="body">
+            Body
+            <textarea name="body" rows="5"></textarea>
+          </label>
+        </fieldset>
+        {{if .Err}}
+          <input type="submit" value="Submit post" aria-invalid="true" aria-describedby="create-post-invalid-helper">
+          <small id="create-post-invalid-helper">{{.Err}}</small>
+        {{else}}
+          <input type="submit" value="Submit post">
+        {{end}}
+      </form>
+    </main>
+  </body>
 </html>
 {{end}}

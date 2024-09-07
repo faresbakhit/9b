@@ -1,0 +1,43 @@
+{{define "modal_login"}}
+<dialog id="modal-login">
+  <article>
+    <header>
+      <button
+        aria-label="Close"
+        rel="prev"
+        data-target="modal-login"
+        onclick="toggleModal(event)">
+      </button>
+      <h3>Log In</h3>
+    </header>
+    <form action="/login" method="post" id="login-form" onsubmit="submitForm(event)" target-error="#login-submit">
+      <fieldset>
+        <label for="login-username">
+          Username
+          <input
+            type="text"
+            name="username"
+            id="login-username"
+            required
+            autofocus="true"
+            spellcheck="false"
+            autocorrect="off"
+            autocapitalize="off"
+            autocomplete="username">
+        </label>
+        <label for="login-password">
+          Password
+          <input
+            type="password"
+            name="password"
+            id="login-password"
+            required
+            autocomplete="current-password">
+        </label>
+      </fieldset>
+      <input type="submit" id="login-submit" aria-describedby="login-submit-invalid-helper" value="Log in">
+      <small id="login-submit-invalid-helper"></small>
+    </form>
+  </article>
+</dialog>
+{{end}}

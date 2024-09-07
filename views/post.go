@@ -1,11 +1,16 @@
 package views
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/faresbakhit/9b/store"
+)
 
 type CreatePostData struct {
-	Err string
+	User *store.User
+	Err  string
 }
 
-func CreatePost(w http.ResponseWriter, data CreatePostData, statusCode int) {
+func CreatePost(w http.ResponseWriter, data *CreatePostData, statusCode int) {
 	renderPage(w, "create_post", data, statusCode)
 }

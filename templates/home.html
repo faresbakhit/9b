@@ -1,0 +1,19 @@
+{{define "home"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {{template "meta"}}
+    {{template "css"}}
+    <title>{{template "service_name"}} - Home</title>
+  </head>
+  <body>
+    <header class="container">
+      {{template "nav" .}}
+    </header>
+    <main class="container">
+      <h1>Home</h1>
+    </main>
+    {{template "js"}}
+  </body>
+</html>
+{{end}}

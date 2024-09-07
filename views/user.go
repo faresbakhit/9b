@@ -2,15 +2,14 @@ package views
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/faresbakhit/9b/store"
 )
 
 type UserData struct {
-	Username  string
+	User      *store.User
+	UserOther *store.User
 	Posts     []*store.UserPost
-	CreatedAt *time.Time
 	IsSelf    bool
 	Err       string
 }

@@ -18,12 +18,12 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc(s.SignupGETPattern(), s.SignupGET)
+	mux.HandleFunc(s.HomeGETPattern(), s.HomeGET)
 	mux.HandleFunc(s.SignupPOSTPattern(), s.SignupPOST)
-	mux.HandleFunc(s.LoginGETPattern(), s.LoginGETHandler)
 	mux.HandleFunc(s.LoginPOSTPattern(), s.LoginPOSTHandler)
+	mux.HandleFunc(s.LogoutPOSTPattern(), s.LogoutPOSTHandler)
+	mux.HandleFunc(s.ChangePasswordPOSTPattern(), s.ChangePasswordPOSTHandler)
 	mux.HandleFunc(s.UserGETPattern(), s.UserGETHandler)
-	mux.HandleFunc(s.UserPOSTPattern(), s.UserPOSTHandler)
 	mux.HandleFunc(s.CreatePostGETPattern(), s.CreatePostGETHandler)
 	mux.HandleFunc(s.CreatePostPOSTPattern(), s.CreatePostPOSTHandler)
 

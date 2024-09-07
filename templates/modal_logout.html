@@ -1,0 +1,22 @@
+{{define "modal_logout"}}
+<dialog id="modal-logout">
+  <article>
+    <header>
+      <button
+        aria-label="Close"
+        rel="prev"
+        data-target="modal-logout"
+        onclick="toggleModal(event)">
+      </button>
+      <p>
+        <strong>Are you sure?</strong>
+      </p>
+    </header>
+    <p>This action is irreversible.</p>
+    <form action="/logout" method="post" id="logout-form" onsubmit="submitForm(event)" target-error="logout-submit">
+      <input type="submit" id="logout-submit" value="Log out" aria-describedby="logout-submit-invalid-helper">
+      <small id="logout-submit-invalid-helper"></small>
+    </form>
+  </article>
+</dialog>
+{{end}}

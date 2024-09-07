@@ -1,37 +1,14 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/faresbakhit/9b/store"
-	"github.com/faresbakhit/9b/views"
 )
 
 func (s *Server) LoginPath() string {
 	return "/login"
-}
-
-func (s *Server) LoginPathWithGoto(gotoPath string) string {
-	return s.LoginPath() + "?goto=" + url.QueryEscape(gotoPath)
-}
-
-func (s *Server) LoginGETPattern() string {
-	return "GET " + s.LoginPath()
-}
-
-func (s *Server) LoginGETHandler(w http.ResponseWriter, r *http.Request) {
-	gotoValue := r.URL.Query().Get("goto")
-
-	if user := s.getUser(r); user != nil {
-		if gotoValue == "" {
-			gotoValue = s.UserPath(user.Username)
-		}
-		http.Redirect(w, r, gotoValue, http.StatusSeeOther)
-		return
-	}
-
-	views.Login(w, views.LoginData{Goto: gotoValue}, http.StatusOK)
 }
 
 func (s *Server) LoginPOSTPattern() string {
@@ -39,25 +16,20 @@ func (s *Server) LoginPOSTPattern() string {
 }
 
 func (s *Server) LoginPOSTHandler(w http.ResponseWriter, r *http.Request) {
-	gotoValue := r.FormValue("goto")
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
 	sessionToken, err := s.store.UserUpdateSessionToken(username, []byte(password))
 
 	if err != nil {
-		data := views.LoginData{Goto: gotoValue, Err: "Login failed; Invalid username or password."}
-		views.Login(w, data, http.StatusConflict)
+		w.WriteHeader(http.StatusConflict)
+		fmt.Fprintf(w, "Invalid username or password.")
 		return
 	}
 
 	setSessionTokenCookie(w, sessionToken)
 
-	if gotoValue == "" {
-		gotoValue = s.UserPath(username)
-	}
-
-	http.Redirect(w, r, gotoValue, http.StatusSeeOther)
+	w.WriteHeader(http.StatusOK)
 }
 
 func sessionTokenCookieName() string {

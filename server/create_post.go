@@ -17,11 +17,8 @@ func (s *Server) CreatePostGETPattern() string {
 }
 
 func (s *Server) CreatePostGETHandler(w http.ResponseWriter, r *http.Request) {
-	if s.getUser(r) == nil {
-		http.Redirect(w, r, s.LoginPathWithGoto(s.CreatePostPath()), http.StatusSeeOther)
-		return
-	}
-	views.CreatePost(w, views.CreatePostData{}, http.StatusOK)
+	user := s.getUser(r)
+	views.CreatePost(w, &views.CreatePostData{User: user}, http.StatusOK)
 }
 
 func (s *Server) CreatePostPOSTPattern() string {
@@ -38,14 +35,17 @@ func (s *Server) CreatePostPOSTHandler(w http.ResponseWriter, r *http.Request) {
 	postUrl := r.FormValue("url")
 	postBody := r.FormValue("body")
 	if postTitle == "" {
-		data := views.CreatePostData{Err: "Invalid submission; Title is empty."}
-		views.CreatePost(w, data, http.StatusUnprocessableEntity)
+		data := views.CreatePostData{
+			User: user,
+			Err:  "Invalid submission; Title is empty."}
+		views.CreatePost(w, &data, http.StatusUnprocessableEntity)
 		return
 	}
 	if postUrl == "" && postBody == "" {
 		data := views.CreatePostData{
-			Err: "Invalid Submission; Must have one or both of link and body."}
-		views.CreatePost(w, data, http.StatusUnprocessableEntity)
+			User: user,
+			Err:  "Invalid Submission; Must have one or both of link and body."}
+		views.CreatePost(w, &data, http.StatusUnprocessableEntity)
 		return
 	}
 	if err := s.store.UserPostNew(&store.UserPost{
@@ -55,8 +55,8 @@ func (s *Server) CreatePostPOSTHandler(w http.ResponseWriter, r *http.Request) {
 		Body:   postBody,
 	}); err != nil {
 		log.Printf("new post internal error: %q", err)
-		data := views.CreatePostData{Err: "Internal server error."}
-		views.CreatePost(w, data, http.StatusInternalServerError)
+		data := views.CreatePostData{User: user, Err: "Internal server error."}
+		views.CreatePost(w, &data, http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, s.UserPath(user.Username), http.StatusSeeOther)
