@@ -1,0 +1,34 @@
+{{define "form-new-post"}}
+<form
+  action="/posts"
+  method="post"
+  id="new-post-form"
+  onsubmit="submitForm(event)"
+  data-target-error="#new-post-submit">
+  <fieldset>
+    <input
+      name="title"
+      type="text"
+      required
+      autofocus="true"
+      placeholder="Title"
+      aria-label="Title">
+    <input
+      name="url"
+      type="url"
+      autocomplete="url"
+      placeholder="Link"
+      aria-label="Link">
+    <textarea
+      name="body"
+      placeholder="Body text..."
+      rows="5"></textarea>
+  </fieldset>
+  <input
+    type="submit"
+    id="new-post-submit"
+    aria-describedby="new-post-submit-invalid-helper"
+    value="Submit post">
+  <small id="new-post-submit-invalid-helper"></small>
+</form>
+{{end}}

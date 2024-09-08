@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/faresbakhit/9b/config"
-	"github.com/faresbakhit/9b/server"
+	"github.com/faresbakhit/9b/internal/config"
+	"github.com/faresbakhit/9b/internal/server"
 )
 
 func main() {
-	s, err := server.NewServer()
+	s, err := server.New()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -18,16 +18,14 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc(s.HomeGETPattern(), s.HomeGET)
-	mux.HandleFunc(s.SignupPOSTPattern(), s.SignupPOST)
-	mux.HandleFunc(s.LoginPOSTPattern(), s.LoginPOSTHandler)
-	mux.HandleFunc(s.LogoutPOSTPattern(), s.LogoutPOSTHandler)
-	mux.HandleFunc(s.ChangePasswordPOSTPattern(), s.ChangePasswordPOSTHandler)
-	mux.HandleFunc(s.UserGETPattern(), s.UserGETHandler)
-	mux.HandleFunc(s.CreatePostGETPattern(), s.CreatePostGETHandler)
-	mux.HandleFunc(s.CreatePostPOSTPattern(), s.CreatePostPOSTHandler)
+	mux.HandleFunc("GET /", s.HomeHandler)
+	mux.HandleFunc("POST /signup", s.SignupHandler)
+	mux.HandleFunc("POST /login", s.LoginHandler)
+	mux.HandleFunc("POST /logout", s.LogoutHandler)
+	mux.HandleFunc("POST /change-password", s.ChangePasswordHandler)
+	mux.HandleFunc("POST /posts", s.CreatePostHandler)
 
-	mux.Handle(config.HTTP_PUBLIC_ROUTE, http.StripPrefix(config.HTTP_PUBLIC_ROUTE,
+	mux.Handle("GET "+config.HTTP_PUBLIC_ROUTE, http.StripPrefix(config.HTTP_PUBLIC_ROUTE,
 		http.FileServer(http.Dir(config.HTTP_PUBLIC_DIRECTORY))))
 
 	srv := &http.Server{

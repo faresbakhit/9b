@@ -1,0 +1,16 @@
+package views
+
+import (
+	"net/http"
+
+	"github.com/faresbakhit/9b/internal/store"
+)
+
+type HomeData struct {
+	User  *store.User
+	Posts []*store.UserPost
+}
+
+func Home(w http.ResponseWriter, data *HomeData, statusCode int) {
+	renderPage(w, "home", data, statusCode)
+}

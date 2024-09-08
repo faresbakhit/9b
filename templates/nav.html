@@ -1,0 +1,60 @@
+{{define "nav"}}
+<nav>
+  <ul>
+    <li>
+      <a href="/"><img width="75" height="75" src="/assets/img/icon-color-on-white.svg"></a>
+    </li>
+  </ul>
+  <ul>
+    <form role="search">
+      <input name="search" type="search" placeholder="Search">
+      <select name="type" aria-label="Type" required>
+        <option selected>All</option>
+        <option>Posts</option>
+        <option>Comments</option>
+      </select>
+      <select name="by" aria-label="sortby" required>
+        <option selected>Popularity</option>
+        <option>Date</option>
+      </select>
+    </form>
+  </ul>
+  <ul>
+    {{if .User}}
+      <li>
+        <details class="dropdown">
+          <summary role="button">Account</summary>
+          <ul dir="rtl">
+            <li><a href="#" data-target="modal-change-password" onclick="toggleModal(event)">Change Password</a></li>
+            <li><a href="#" data-target="modal-logout" onclick="toggleModal(event)">Log out</a></li>
+          </ul>
+        </details>
+      </li>
+      <li>
+        <button class="outline" data-target="modal-new-post" onclick="toggleModal(event)">
+          New Post
+        </button>
+      </li>
+    {{else}}
+      <li>
+        <button data-target="modal-signup" onclick="toggleModal(event)">
+          Sign Up
+        </button>
+      </li>
+      <li>
+        <button class="outline" data-target="modal-login" onclick="toggleModal(event)">
+          Log In
+        </button>
+      </li>
+    {{end}}
+  </ul>
+  {{if .User}}
+    {{template "modal-change-password"}}
+    {{template "modal-logout"}}
+    {{template "modal-new-post"}}
+  {{else}}
+    {{template "modal-signup"}}
+    {{template "modal-login"}}
+  {{end}}
+</nav>
+{{end}}

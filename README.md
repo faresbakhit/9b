@@ -1,10 +1,10 @@
-# 9B – A link aggregator you can self-host
+# 9B – A link aggregator/forum you can self-host
 
-<img align="left" src="art/icon-with-tech-mascots.svg" width="256px">
+<img align="left" src="public/img/icon-color-on-white-mascots.svg" width="256px">
 
-9B is a [free] link aggregator/social news aggregation/discussion forum
-service that you can self-host easily for any purpose you want (e.g.
-in-house forum for your team, public forum for a niche topic, etc).
+9B is a [free] link aggregator/discussion forum service that yocan
+self-host easily for any purpose you want (e.g. in-house forum for
+your team, public forum for a niche topic, etc).
 
 It is similar to websites you've probably encountered before like [Reddit],
 [Lemmy], and [Hacker News], however 9B differs from those that you can:

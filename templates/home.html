@@ -1,19 +1,40 @@
 {{define "home"}}
 <!DOCTYPE html>
-<html lang="en">
+<html data-theme="light" lang="en">
   <head>
-    {{template "meta"}}
-    {{template "css"}}
-    <title>{{template "service_name"}} - Home</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="/assets/css/pico.jade.min.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <title>9B - Link Aggregator</title>
   </head>
   <body>
     <header class="container">
       {{template "nav" .}}
     </header>
     <main class="container">
-      <h1>Home</h1>
+      {{range $val := .Posts}}
+        <article>
+          <header>
+            {{if eq $val.URL ""}}
+            {{$val.Title}}
+            {{else}}
+              <h3><a href={{$val.URL}}>{{$val.Title}}</a></h3>
+            {{end}}
+            <p>
+              {{if eq $val.Score 1}}{{$val.Score}} point
+              {{else}}{{$val.Score}} points
+              {{end}}
+            </p>
+          </header>
+          {{range $p :=  $val.Body | split "\n"}}
+            <p>{{$p}}</p>
+          {{end}}
+        </article>
+      {{end}}
     </main>
-    {{template "js"}}
+    <script src="/assets/js/index.js"></script>
   </body>
 </html>
 {{end}}
