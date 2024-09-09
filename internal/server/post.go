@@ -4,10 +4,24 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/faresbakhit/9b/internal/config"
 	"github.com/faresbakhit/9b/internal/store"
+	"github.com/faresbakhit/9b/internal/views"
 )
+
+func (s *Server) GetPostHandler(w http.ResponseWriter, r *http.Request) {
+	user := s.getUser(r)
+	postId, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	post := s.store.UserPostGet(user.Id, postId)
+	data := &views.PostData{LoggedIn: user != nil, Post: post}
+	views.Post(w, data, http.StatusOK)
+}
 
 func (s *Server) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	user := s.getUser(r)
@@ -46,7 +60,7 @@ func (s *Server) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if err := s.store.UserPostNew(&store.UserPost{
+	if err := s.store.UserPostNew(&store.UserPostNew{
 		UserId: user.Id,
 		Title:  postTitle,
 		URL:    postURL,

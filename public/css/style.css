@@ -1,5 +1,39 @@
 @charset "UTF-8";
 
+.post header {
+  display: flex;
+  align-items: center;
+}
+
+.post header h3 {
+  margin: 0;
+}
+
+.post header h3 a {
+  text-decoration: none;
+}
+
+.post time {
+  border-bottom: unset;
+}
+
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 1rem;
+}
+
+.score p {
+  font-size: 0.875em; 
+  margin: 0.2rem 0;
+}
+
+.score button {
+  padding-block: 1px;
+  padding-inline: 6px;
+}
+
 nav ul li button,
 nav ul li [role=button] {
   text-wrap: nowrap;

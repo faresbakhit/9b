@@ -15,6 +15,7 @@ CREATE TABLE user_post(
   url TEXT NOT NULL,
   body TEXT NOT NULL,
   score INTEGER NOT NULL DEFAULT 0,
+  comments INTEGER NOT NULL DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
@@ -96,6 +97,7 @@ CREATE TRIGGER user_post_downvote_delete DELETE ON user_post_downvote
 CREATE TRIGGER user_post_comment_insert AFTER INSERT ON user_post_comment
   BEGIN
     INSERT INTO user_post_comment_upvote (user_id, post_comment_id) VALUES (NEW.user_id, NEW.id);
+    UPDATE user_post SET comments = comments + 1 WHERE id = NEW.post_id;
   END;
 
 -- Triggers for inserts and deletes on 'user_post_comment_upvote' and 'user_post_comment_downvote'.

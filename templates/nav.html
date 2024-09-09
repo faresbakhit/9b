@@ -20,7 +20,7 @@
     </form>
   </ul>
   <ul>
-    {{if .User}}
+    {{if .LoggedIn}}
       <li>
         <details class="dropdown">
           <summary role="button">Account</summary>
@@ -48,7 +48,7 @@
       </li>
     {{end}}
   </ul>
-  {{if .User}}
+  {{if .LoggedIn}}
     {{template "modal-change-password"}}
     {{template "modal-logout"}}
     {{template "modal-new-post"}}

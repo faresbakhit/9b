@@ -1,0 +1,22 @@
+{{define "form-new-comment"}}
+<form
+  action="/comments"
+  method="post"
+  id="new-comment-form"
+  onsubmit="submitForm(event)"
+  data-target-error="#new-post-submit">
+  <fieldset>
+    <textarea
+      name="comment"
+      placeholder="Comment text..."
+      rows="5"></textarea>
+  </fieldset>
+  <input
+    type="submit"
+    id="new-comment-submit"
+    aria-describedby="new-comment-submit-invalid-helper"
+    value="Add comment">
+  <small id="new-comment-submit-invalid-helper"></small>
+</form>
+{{end}}
+

@@ -13,7 +13,7 @@ import (
 )
 
 type User struct {
-	Id             int64
+	Id             int
 	Username       string
 	HashedPassword []byte
 	CreatedAt      *time.Time

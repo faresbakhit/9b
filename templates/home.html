@@ -14,22 +14,55 @@
       {{template "nav" .}}
     </header>
     <main class="container">
-      {{range $val := .Posts}}
-        <article>
+      {{range $post:= .Posts}}
+        <article class="post">
           <header>
-            {{if eq $val.URL ""}}
-            {{$val.Title}}
-            {{else}}
-              <h3><a href={{$val.URL}}>{{$val.Title}}</a></h3>
-            {{end}}
-            <p>
-              {{if eq $val.Score 1}}{{$val.Score}} point
-              {{else}}{{$val.Score}} points
+            <div class="score">
+              <button
+                class="{{if not $post.UserUpvoted}}outline{{end}}"
+                aria-label="Upvote">&uarr;</button>
+              <p>{{$post.Score}}</p>
+              <button
+                class="{{if not $post.UserDownvoted}}outline{{end}}"
+                aria-label="Downvote">&darr;</button>
+            </div>
+            <div>
+              <h3>
+              {{if eq $post.URL ""}}
+                <a href="/posts/{{$post.Id}}">{{$post.Title}}</a>
+              {{else}}
+                <a href="{{$post.URL}}">{{$post.Title}}</a>
               {{end}}
-            </p>
+              </h3>
+              by <a href="/?user={{$post.Author}}">{{$post.Author}}</a>,
+              {{with $post.Date.Format "2006-01-02 15:04"}}
+                <time datetime="{{.}}" data-tooltip="{{.}}" data-placement="bottom">{{timehumanize $post.Date}}</time>.
+              {{end}}
+            </div>
           </header>
-          {{range $p :=  $val.Body | split "\n"}}
-            <p>{{$p}}</p>
+          {{if $post.Body}}
+            <div class="expandable">
+              {{range $p := $post.Body | split "\n\n"}}
+                <p>{{$p}}</p>
+              {{end}}
+            </div>
+            <footer>
+              {{if eq $post.Comments 0}}
+                <a role="button" href="/posts/{{$post.Id}}">Discuss</a>
+              {{else if eq $post.Comments 1}}
+                <a role="button" href="/posts/{{$post.Id}}">1 Comment</a>
+              {{else}}
+                <a role="button" href="/posts/{{$post.Id}}">{{$post.Comments}} Comments</a>
+              {{end}}
+            </footer>
+          {{else}}
+            {{if eq $post.Comments 0}}
+              <a role="button" href="/posts/{{$post.Id}}">Discuss</a>
+            {{else if eq $post.Comments 1}}
+              <a role="button" href="/posts/{{$post.Id}}">1 Comment</a>
+            {{else}}
+              <a role="button" href="/posts/{{$post.Id}}">{{$post.Comments}} Comments</a>
+            {{end}}
           {{end}}
         </article>
       {{end}}

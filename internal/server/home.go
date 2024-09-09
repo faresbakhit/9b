@@ -13,16 +13,25 @@ func (s *Server) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	r.URL.Query().Get("type")
 	r.URL.Query().Get("sortby")
 
-	var posts []*store.UserPost
-	for p, err := range s.store.UserPostListToday(10, 0) {
+	var userId int
+
+	user := s.getUser(r)
+	if user == nil {
+		userId = 0
+	} else {
+		userId = user.Id
+	}
+
+	var posts []*store.UserPostListResult
+	for p, err := range s.store.UserPostList(userId, 10, 0) {
 		if err != nil {
 			log.Printf("HomeHandler:UserPostListToday:%q", err)
 			http.Error(w, "Internal server error.", http.StatusInternalServerError)
+			return
 		}
 		posts = append(posts, p)
 	}
 
-	user := s.getUser(r)
-
-	views.Home(w, &views.HomeData{User: user, Posts: posts}, http.StatusOK)
+	data := &views.HomeData{LoggedIn: user != nil, Posts: posts}
+	views.Home(w, data, http.StatusOK)
 }

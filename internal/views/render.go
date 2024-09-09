@@ -5,7 +5,9 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/faresbakhit/9b/internal/config"
 )
 
@@ -13,6 +15,9 @@ var t *template.Template
 var funcMap = template.FuncMap{
 	"split": func(sep string, s string) []string {
 		return strings.Split(s, sep)
+	},
+	"timehumanize": func(time *time.Time) string {
+		return humanize.Time(*time)
 	},
 }
 

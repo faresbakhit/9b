@@ -35,8 +35,8 @@ func setSessionTokenCookie(w http.ResponseWriter, sessionToken string) {
 		Name:     sessionTokenCookieName(),
 		Value:    sessionToken,
 		Path:     "/",
-		Secure:   true,
-		HttpOnly: true,
+		Secure:   false,
+		HttpOnly: false,
 		SameSite: http.SameSiteLaxMode,
 	})
 }

@@ -13,6 +13,8 @@ It is similar to websites you've probably encountered before like [Reddit],
 \- Customize the interface to your liking. \
 \- Hack your own version of it.
 
+![9B's Homepage](public/img/homepage.jpg)
+
 [free]: https://www.gnu.org/philosophy/free-sw.en.html
 [Reddit]: https://old.reddit.com
 [Lemmy]: https://join-lemmy.org/

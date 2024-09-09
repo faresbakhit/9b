@@ -1,0 +1,58 @@
+{{define "post"}}
+<!DOCTYPE html>
+<html data-theme="light" lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="/assets/css/pico.jade.min.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <title>9B - Link Aggregator</title>
+  </head>
+  <body>
+    <header class="container">
+      {{template "nav" .}}
+    </header>
+    <main class="container">
+      <article class="post">
+        <header>
+          <div class="score">
+            <button
+              class="{{if not .Post.UserUpvoted}}outline{{end}}"
+              aria-label="Upvote">&uarr;</button>
+            <p>{{.Post.Score}}</p>
+            <button
+              class="{{if not .Post.UserDownvoted}}outline{{end}}"
+              aria-label="Downvote">&darr;</button>
+          </div>
+          <div>
+            <h3>
+            {{if eq .Post.URL ""}}
+              <a href="/posts/{{.Post.Id}}">{{.Post.Title}}</a>
+            {{else}}
+              <a href="{{.Post.URL}}">{{.Post.Title}}</a>
+            {{end}}
+            </h3>
+            by <a href="/?user=.Post.User">{{.Post.Author}}</a>,
+            {{with .Post.Date.Format "2006-01-02 15:04"}}
+              <time datetime="{{.}}" data-tooltip="{{.}}" data-placement="bottom">{{timehumanize $.Post.Date}}</time>.
+            {{end}}
+          </div>
+        </header>
+        {{if .Post.Body}}
+          {{range $p := .Post.Body | split "\n\n"}}
+            <p>{{$p}}</p>
+          {{end}}
+        {{end}}
+        <footer>
+          {{if .LoggedIn}}
+            {{template "form-new-comment"}}
+          {{end}}
+        </footer>
+      </article>
+    </main>
+    <script src="/assets/js/index.js"></script>
+  </body>
+</html>
+{{end}}
+

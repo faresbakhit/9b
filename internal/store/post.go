@@ -2,40 +2,118 @@ package store
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 )
 
-type UserPost struct {
-	Id        int64
-	UserId    int64
-	Title     string
-	URL       string
-	Body      string
-	Score     int
-	CreatedAt *time.Time
+type UserPostNew struct {
+	UserId int
+	Title  string
+	URL    string
+	Body   string
 }
 
-func (s *Store) UserPostNew(post *UserPost) error {
+func (s *Store) UserPostNew(post *UserPostNew) error {
 	post.Body = strings.ReplaceAll(post.Body, "\r\n", "\n")
 	query := `
 		INSERT INTO user_post
 		(user_id, title, url, body)
-		VALUES (?, ?, ?, ?)
-		RETURNING id, score, created_at`
-	row := s.db.QueryRow(query, post.UserId, post.Title, post.URL, post.Body)
-	if err := row.Scan(&post.Id, &post.Score, &post.CreatedAt); err != nil {
-		return err
-	}
-	return nil
+		VALUES (?, ?, ?, ?)`
+	_, err := s.db.Exec(query, post.UserId, post.Title, post.URL, post.Body)
+	return err
 }
 
-func (s *Store) UserPostListFromUser(userId int64, limit, offset int) func(func(*UserPost, error) bool) {
-	return func(yield func(*UserPost, error) bool) {
+type UserPostGet struct {
+	Id            int
+	Score         int
+	UserUpvoted   bool
+	UserDownvoted bool
+	Author        string
+	Title         string
+	URL           string
+	Body          string
+	Date          *time.Time
+}
+
+func (s *Store) UserPostGet(userId, postId int) *UserPostGet {
+	var post UserPostGet
+	query := fmt.Sprintf(`
+		SELECT
+			user_post.id,
+			score,
+			IIF(user_post_upvote.id, 1, 0),
+			IIF(user_post_downvote.id, 1, 0),
+			username,
+			title,
+			url,
+			body,
+			user_post.created_at
+		FROM user_post
+		JOIN user ON user.id = user_post.user_id
+		LEFT JOIN user_post_upvote ON
+			user_post_upvote.post_id = user_post.id
+			AND user_post_upvote.user_id = %[1]d
+		LEFT JOIN user_post_downvote ON
+			user_post_downvote.post_id = user_post.id
+			AND user_post_downvote.user_id = %[1]d
+		WHERE user_post.id = %d`, userId, postId)
+	row := s.db.QueryRow(query)
+	if err := row.Scan(
+		&post.Id,
+		&post.Score,
+		&post.UserUpvoted,
+		&post.UserDownvoted,
+		&post.Author,
+		&post.Title,
+		&post.URL,
+		&post.Body,
+		&post.Date); err != nil {
+		log.Printf("UserPostGet: %v", err)
+		return nil
+	}
+	return &post
+}
+
+type UserPostListResult struct {
+	Id            int
+	Score         int
+	Comments      int
+	UserUpvoted   bool
+	UserDownvoted bool
+	Author        string
+	Title         string
+	URL           string
+	Body          string
+	Date          *time.Time
+}
+
+func (s *Store) UserPostList(userId, limit, offset int) func(func(*UserPostListResult, error) bool) {
+	return func(yield func(*UserPostListResult, error) bool) {
+		// Proof that a SELECT statement is turing complete.
 		query := fmt.Sprintf(`
-			SELECT * FROM user_post
-			ORDER BY created_at
-			LIMIT %d OFFSET %d`, limit, offset)
+			SELECT
+				user_post.id,
+				score,
+				comments,
+				IIF(user_post_upvote.id, 1, 0),
+				IIF(user_post_downvote.id, 1, 0),
+				username,
+				title,
+				url,
+				body,
+				user_post.created_at
+			FROM user_post
+			JOIN user ON user.id = user_post.user_id
+			LEFT JOIN user_post_upvote ON
+				user_post_upvote.post_id = user_post.id
+				AND user_post_upvote.user_id = %[1]d
+			LEFT JOIN user_post_downvote ON
+				user_post_downvote.post_id = user_post.id
+				AND user_post_downvote.user_id = %[1]d
+			WHERE user_post.created_at > datetime('now', '-1 day')
+			ORDER BY score DESC, user_post.created_at DESC
+			LIMIT %d OFFSET %d`, userId, limit, offset)
 		rows, err := s.db.Query(query)
 		defer rows.Close()
 		if err != nil {
@@ -43,52 +121,18 @@ func (s *Store) UserPostListFromUser(userId int64, limit, offset int) func(func(
 			return
 		}
 		for rows.Next() {
-			var post UserPost
+			var post UserPostListResult
 			err := rows.Scan(
 				&post.Id,
-				&post.UserId,
+				&post.Score,
+				&post.Comments,
+				&post.UserUpvoted,
+				&post.UserDownvoted,
+				&post.Author,
 				&post.Title,
 				&post.URL,
 				&post.Body,
-				&post.Score,
-				&post.CreatedAt)
-			if err != nil {
-				yield(nil, err)
-				return
-			}
-			if !yield(&post, nil) {
-				return
-			}
-		}
-		if err := rows.Err(); err != nil {
-			yield(nil, err)
-		}
-	}
-}
-
-func (s *Store) UserPostListToday(limit, offset int) func(func(*UserPost, error) bool) {
-	return func(yield func(*UserPost, error) bool) {
-		query := fmt.Sprintf(`
-			SELECT * FROM user_post
-			WHERE created_at > datetime('now', '-1 day')
-			ORDER BY score
-			LIMIT %d OFFSET %d`, limit, offset)
-		rows, err := s.db.Query(query)
-		defer rows.Close()
-		if err != nil {
-			yield(nil, err)
-			return
-		}
-		for rows.Next() {
-			var post UserPost
-			err := rows.Scan(
-				&post.Id,
-				&post.UserId,
-				&post.Title,
-				&post.URL,
-				&post.Body,
-				&post.Score,
-				&post.CreatedAt)
+				&post.Date)
 			if err != nil {
 				yield(nil, err)
 				return

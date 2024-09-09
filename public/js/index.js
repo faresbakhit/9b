@@ -1,4 +1,57 @@
 /*
+ * Collapse
+ */
+
+const MAX_PARAGRAPH_LENGTH = 420;
+
+[...document.getElementsByClassName("expandable")].forEach((elm) => {
+  const expandParagraph = document.createElement("p");
+  const expandNewParagraph = document.createElement("p");
+
+  const expandLink = document.createElement("a");
+  expandLink.setAttribute("href", "javascript:void(0);")
+  expandLink.textContent = "Read more";
+  expandLink.onclick = () => {
+    [...elm.children].forEach((child) => {
+      child.style.display = 'block';
+    })
+    expandParagraph.style.display = 'none';
+    expandNewParagraph.style.display = 'none';
+  }
+
+  [...elm.children].forEach((child) => {
+    child.style.display = 'none'
+  })
+
+  if (elm.childElementCount > 1) {
+    let text = elm.children[0].textContent;
+    if (text.length > MAX_PARAGRAPH_LENGTH) {
+      expandParagraph.append(text.substr(0, MAX_PARAGRAPH_LENGTH) + "... ");
+      expandParagraph.appendChild(expandLink);
+      expandParagraph.append(".");
+      elm.appendChild(expandParagraph);
+    } else {
+      expandParagraph.append(text);
+      expandNewParagraph.append("... ");
+      expandNewParagraph.appendChild(expandLink);
+      expandNewParagraph.append(".");
+      elm.appendChild(expandParagraph);
+      elm.appendChild(expandNewParagraph);
+    }
+  } else {
+    let text = elm.children[0].textContent;
+    if (text.length > MAX_PARAGRAPH_LENGTH) {
+      expandParagraph.append(text.substr(0, MAX_PARAGRAPH_LENGTH) + "... ");
+      expandParagraph.appendChild(expandLink);
+      expandParagraph.append(".");
+      elm.appendChild(expandParagraph);
+    } else {
+      expandParagraph.append(text);
+      elm.appendChild(expandParagraph);
+    }
+  }
+})
+/*
  * Form
  */
 

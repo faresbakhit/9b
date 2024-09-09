@@ -23,6 +23,7 @@ func main() {
 	mux.HandleFunc("POST /login", s.LoginHandler)
 	mux.HandleFunc("POST /logout", s.LogoutHandler)
 	mux.HandleFunc("POST /change-password", s.ChangePasswordHandler)
+	mux.HandleFunc("GET /posts/{id}", s.GetPostHandler)
 	mux.HandleFunc("POST /posts", s.CreatePostHandler)
 
 	mux.Handle("GET "+config.HTTP_PUBLIC_ROUTE, http.StripPrefix(config.HTTP_PUBLIC_ROUTE,
