@@ -1,6 +1,6 @@
 # 9B – A link aggregator/forum you can self-host
 
-<img align="left" src="public/img/icon-color-on-white-mascots.svg" width="256px">
+<img align="left" src="public/img/icon-color-on-white-mascots.svg" width="200px">
 
 9B is a [free] link aggregator/discussion forum service that yocan
 self-host easily for any purpose you want (e.g. in-house forum for
@@ -12,6 +12,8 @@ It is similar to websites you've probably encountered before like [Reddit],
 \- Build it and self-host it yourself in a matter of seconds. \
 \- Customize the interface to your liking. \
 \- Hack your own version of it.
+
+<br>
 
 ![9B's Homepage](public/img/homepage.jpg)
 
