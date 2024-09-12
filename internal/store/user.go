@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -57,6 +58,7 @@ func (s *Store) UserNew(username string, hashedPassword []byte) (*User, error) {
 
 	row := s.db.QueryRow(query, username, hashedPassword, sessionToken)
 	if err := row.Scan(&user.Id, &user.CreatedAt); err != nil {
+		log.Print(err)
 		return nil, err
 	}
 
@@ -78,7 +80,10 @@ func (s *Store) UserUpdatePassword(user *User, currentPassword, newPassword []by
 		SET session_token = NULL,
 			hashed_password = ?
 		WHERE id = ?`
-	if _, err := s.db.Exec(query, hashedPassword, user.Id); err != nil {
+	_, err = s.db.Exec(query, hashedPassword, user.Id)
+
+	if err != nil {
+		log.Print(err)
 		return err
 	}
 
@@ -94,15 +99,18 @@ func (s *Store) UserUpdateSessionToken(username string, password []byte) (sessio
 		WHERE username = ?`
 	row := s.db.QueryRow(query, username)
 	if err = row.Scan(&hashedPassword); err != nil {
+		log.Print(err)
 		return
 	}
 
 	sessionToken, err = generateSessionToken()
 	if err != nil {
+		log.Print(err)
 		return
 	}
 
 	if err = compareHashAndPassword(hashedPassword, password); err != nil {
+		log.Print(err)
 		return
 	}
 
@@ -110,7 +118,9 @@ func (s *Store) UserUpdateSessionToken(username string, password []byte) (sessio
 		UPDATE user
 		SET session_token = ?
 		WHERE username = ?`
-	_, err = s.db.Exec(query, sessionToken, username)
+	if _, err = s.db.Exec(query, sessionToken, username); err != nil {
+		log.Print(err)
+	}
 
 	return
 }
@@ -120,39 +130,45 @@ func (s *Store) UserDeleteSessionToken(sessionToken string) error {
 		UPDATE user
 		SET session_token = NULL
 		WHERE session_token = ?`
-	if _, err := s.db.Exec(query, sessionToken); err != nil {
-		return err
+	_, err := s.db.Exec(query, sessionToken)
+
+	if err != nil {
+		log.Print(err)
 	}
 
-	return nil
+	return err
 }
 
 func (s *Store) UserFromSessionToken(sessionToken string) (*User, error) {
 	user := User{}
 
 	row := s.db.QueryRow("SELECT * FROM user WHERE session_token = ?", sessionToken)
-	if err := row.Scan(
+	err := row.Scan(
 		&user.Id,
 		&user.Username,
 		&user.HashedPassword,
 		&user.SessionToken,
-		&user.CreatedAt); err != nil {
-		return nil, err
+		&user.CreatedAt)
+
+	if err != nil {
+		log.Print(err)
 	}
 
-	return &user, nil
+	return &user, err
 }
 
 func (s *Store) UserFromUsername(username string) (*User, error) {
 	user := User{}
 
 	row := s.db.QueryRow("SELECT * FROM user WHERE username = ?", username)
-	if err := row.Scan(
+	err := row.Scan(
 		&user.Id,
 		&user.Username,
 		&user.HashedPassword,
 		&user.SessionToken,
-		&user.CreatedAt); err != nil {
+		&user.CreatedAt)
+
+	if err != nil {
 		return nil, err
 	}
 

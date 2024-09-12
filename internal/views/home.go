@@ -8,7 +8,7 @@ import (
 
 type HomeData struct {
 	LoggedIn bool
-	Posts    []*store.UserPostListResult
+	Posts    []*store.PostFrontpage
 }
 
 func Home(w http.ResponseWriter, data *HomeData, statusCode int) {

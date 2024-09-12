@@ -1,8 +1,10 @@
 package server
 
 import (
+	"log"
 	"net/http"
 
+	"github.com/faresbakhit/9b/internal/config"
 	"github.com/faresbakhit/9b/internal/store"
 )
 
@@ -22,21 +24,17 @@ func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func sessionTokenCookieName() string {
-	return "session_token"
-}
-
 func getSessionTokenCookie(r *http.Request) (*http.Cookie, error) {
-	return r.Cookie(sessionTokenCookieName())
+	return r.Cookie(config.SESSION_TOKEN_COOKIE_NAME)
 }
 
 func setSessionTokenCookie(w http.ResponseWriter, sessionToken string) {
 	http.SetCookie(w, &http.Cookie{
-		Name:     sessionTokenCookieName(),
+		Name:     config.SESSION_TOKEN_COOKIE_NAME,
 		Value:    sessionToken,
 		Path:     "/",
-		Secure:   false,
-		HttpOnly: false,
+		Secure:   true,
+		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	})
 }
@@ -44,10 +42,12 @@ func setSessionTokenCookie(w http.ResponseWriter, sessionToken string) {
 func (s *Server) getUser(r *http.Request) *store.User {
 	sessionToken, err := getSessionTokenCookie(r)
 	if err != nil {
+		log.Print(err)
 		return nil
 	}
 	user, err := s.store.UserFromSessionToken(sessionToken.Value)
 	if err != nil {
+		log.Print(err)
 		return nil
 	}
 	return user

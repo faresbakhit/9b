@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -18,7 +19,7 @@ func (s *Server) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	post := s.store.UserPostGet(user.Id, postId)
+	post := s.store.PostGet(user.Id, postId)
 	data := &views.PostData{LoggedIn: user != nil, Post: post}
 	views.Post(w, data, http.StatusOK)
 }
@@ -60,15 +61,97 @@ func (s *Server) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if err := s.store.UserPostNew(&store.UserPostNew{
+
+	id, err := s.store.PostNew(&store.UserPostNew{
 		UserId: user.Id,
 		Title:  postTitle,
 		URL:    postURL,
 		Body:   postBody,
-	}); err != nil {
+	})
+
+	if err != nil {
 		log.Printf("post internal error: %q", err)
 		http.Error(w, "Internal server error.", http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%d", id)
+}
+
+func (s *Server) GetPostScoreHandler(w http.ResponseWriter, r *http.Request) {
+	postId, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	score, err := s.store.PostGetScore(postId)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%d", score)
+}
+
+func (s *Server) GetPostUpvotesHandler(w http.ResponseWriter, r *http.Request) {
+	postId, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	score, err := s.store.PostGetUpvotes(postId)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%d", score)
+}
+
+func (s *Server) GetPostDownvotesHandler(w http.ResponseWriter, r *http.Request) {
+	postId, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	score, err := s.store.PostGetDownvotes(postId)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%d", score)
+}
+
+func (s *Server) CreatePostUpvoteHandler(w http.ResponseWriter, r *http.Request) {
+	postId, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	user := s.getUser(r)
+	if user == nil {
+		http.Error(w, "Unauthorized.", http.StatusUnauthorized)
+		return
+	}
+	upvotes, err := s.store.PostCreateUpvote(user.Id, postId)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%d", upvotes)
+}
+
+func (s *Server) CreatePostDownvoteHandler(w http.ResponseWriter, r *http.Request) {
+	postId, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	user := s.getUser(r)
+	if user == nil {
+		http.Error(w, "Unauthorized.", http.StatusUnauthorized)
+		return
+	}
+	downvotes, err := s.store.PostCreateDownvote(user.Id, postId)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "%d", downvotes)
 }

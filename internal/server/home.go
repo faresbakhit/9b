@@ -22,8 +22,8 @@ func (s *Server) HomeHandler(w http.ResponseWriter, r *http.Request) {
 		userId = user.Id
 	}
 
-	var posts []*store.UserPostListResult
-	for p, err := range s.store.UserPostList(userId, 10, 0) {
+	var posts []*store.PostFrontpage
+	for p, err := range s.store.PostListFrontpage(userId, 10, 0) {
 		if err != nil {
 			log.Printf("HomeHandler:UserPostListToday:%q", err)
 			http.Error(w, "Internal server error.", http.StatusInternalServerError)

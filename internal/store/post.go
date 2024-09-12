@@ -14,17 +14,22 @@ type UserPostNew struct {
 	Body   string
 }
 
-func (s *Store) UserPostNew(post *UserPostNew) error {
+func (s *Store) PostNew(post *UserPostNew) (id int, err error) {
 	post.Body = strings.ReplaceAll(post.Body, "\r\n", "\n")
 	query := `
-		INSERT INTO user_post
+		INSERT INTO post
 		(user_id, title, url, body)
-		VALUES (?, ?, ?, ?)`
-	_, err := s.db.Exec(query, post.UserId, post.Title, post.URL, post.Body)
-	return err
+		VALUES (?, ?, ?, ?)
+		RETURNING id`
+	row := s.db.QueryRow(query, post.UserId, post.Title, post.URL, post.Body)
+	err = row.Scan(&id)
+	if err != nil {
+		log.Print(err)
+	}
+	return
 }
 
-type UserPostGet struct {
+type PostGet struct {
 	Id            int
 	Score         int
 	UserUpvoted   bool
@@ -36,28 +41,28 @@ type UserPostGet struct {
 	Date          *time.Time
 }
 
-func (s *Store) UserPostGet(userId, postId int) *UserPostGet {
-	var post UserPostGet
+func (s *Store) PostGet(userId, postId int) *PostGet {
+	var post PostGet
 	query := fmt.Sprintf(`
 		SELECT
-			user_post.id,
+			post.id,
 			score,
-			IIF(user_post_upvote.id, 1, 0),
-			IIF(user_post_downvote.id, 1, 0),
+			IIF(post_upvote.id, 1, 0),
+			IIF(post_downvote.id, 1, 0),
 			username,
 			title,
 			url,
 			body,
-			user_post.created_at
-		FROM user_post
-		JOIN user ON user.id = user_post.user_id
-		LEFT JOIN user_post_upvote ON
-			user_post_upvote.post_id = user_post.id
-			AND user_post_upvote.user_id = %[1]d
-		LEFT JOIN user_post_downvote ON
-			user_post_downvote.post_id = user_post.id
-			AND user_post_downvote.user_id = %[1]d
-		WHERE user_post.id = %d`, userId, postId)
+			post.created_at
+		FROM post
+		JOIN user ON user.id = post.user_id
+		LEFT JOIN post_upvote ON
+			post_upvote.post_id = post.id
+			AND post_upvote.user_id = %[1]d
+		LEFT JOIN post_downvote ON
+			post_downvote.post_id = post.id
+			AND post_downvote.user_id = %[1]d
+		WHERE post.id = %d`, userId, postId)
 	row := s.db.QueryRow(query)
 	if err := row.Scan(
 		&post.Id,
@@ -69,13 +74,13 @@ func (s *Store) UserPostGet(userId, postId int) *UserPostGet {
 		&post.URL,
 		&post.Body,
 		&post.Date); err != nil {
-		log.Printf("UserPostGet: %v", err)
+		log.Print(err)
 		return nil
 	}
 	return &post
 }
 
-type UserPostListResult struct {
+type PostFrontpage struct {
 	Id            int
 	Score         int
 	Comments      int
@@ -88,40 +93,41 @@ type UserPostListResult struct {
 	Date          *time.Time
 }
 
-func (s *Store) UserPostList(userId, limit, offset int) func(func(*UserPostListResult, error) bool) {
-	return func(yield func(*UserPostListResult, error) bool) {
+func (s *Store) PostListFrontpage(userId, limit, offset int) func(func(*PostFrontpage, error) bool) {
+	return func(yield func(*PostFrontpage, error) bool) {
 		// Proof that a SELECT statement is turing complete.
 		query := fmt.Sprintf(`
 			SELECT
-				user_post.id,
+				post.id,
 				score,
 				comments,
-				IIF(user_post_upvote.id, 1, 0),
-				IIF(user_post_downvote.id, 1, 0),
+				IIF(post_upvote.id, 1, 0),
+				IIF(post_downvote.id, 1, 0),
 				username,
 				title,
 				url,
 				body,
-				user_post.created_at
-			FROM user_post
-			JOIN user ON user.id = user_post.user_id
-			LEFT JOIN user_post_upvote ON
-				user_post_upvote.post_id = user_post.id
-				AND user_post_upvote.user_id = %[1]d
-			LEFT JOIN user_post_downvote ON
-				user_post_downvote.post_id = user_post.id
-				AND user_post_downvote.user_id = %[1]d
-			WHERE user_post.created_at > datetime('now', '-1 day')
-			ORDER BY score DESC, user_post.created_at DESC
+				post.created_at
+			FROM post
+			JOIN user ON user.id = post.user_id
+			LEFT JOIN post_upvote ON
+				post_upvote.post_id = post.id
+				AND post_upvote.user_id = %[1]d
+			LEFT JOIN post_downvote ON
+				post_downvote.post_id = post.id
+				AND post_downvote.user_id = %[1]d
+			WHERE post.created_at > datetime('now', '-1 day')
+			ORDER BY score DESC, post.created_at DESC
 			LIMIT %d OFFSET %d`, userId, limit, offset)
 		rows, err := s.db.Query(query)
 		defer rows.Close()
 		if err != nil {
+			log.Print(err)
 			yield(nil, err)
 			return
 		}
 		for rows.Next() {
-			var post UserPostListResult
+			var post PostFrontpage
 			err := rows.Scan(
 				&post.Id,
 				&post.Score,
@@ -134,6 +140,7 @@ func (s *Store) UserPostList(userId, limit, offset int) func(func(*UserPostListR
 				&post.Body,
 				&post.Date)
 			if err != nil {
+				log.Print(err)
 				yield(nil, err)
 				return
 			}
@@ -145,4 +152,58 @@ func (s *Store) UserPostList(userId, limit, offset int) func(func(*UserPostListR
 			yield(nil, err)
 		}
 	}
+}
+
+func (s *Store) PostGetScore(postId int) (int, error) {
+	var score int
+	row := s.db.QueryRow("SELECT score FROM post WHERE id = ?", postId)
+	err := row.Scan(&score)
+	if err != nil {
+		log.Print(err)
+	}
+	return score, err
+}
+
+func (s *Store) PostGetUpvotes(postId int) (int, error) {
+	var score int
+	row := s.db.QueryRow("SELECT COUNT() FROM post_upvote WHERE post_id = ?", postId)
+	err := row.Scan(&score)
+	if err != nil {
+		log.Print(err)
+	}
+	return score, err
+}
+
+func (s *Store) PostGetDownvotes(postId int) (int, error) {
+	var score int
+	row := s.db.QueryRow("SELECT COUNT() FROM post_downvote WHERE post_id = ?", postId)
+	err := row.Scan(&score)
+	if err != nil {
+		log.Print(err)
+	}
+	return score, err
+}
+
+func (s *Store) PostCreateUpvote(userId, postId int) (upvotes int, err error) {
+	_, err = s.db.Exec("INSERT INTO post_upvote (user_id, post_id) VALUES (?, ?)", userId, postId)
+	if err != nil {
+		log.Print(err)
+	}
+	upvotes, err = s.PostGetUpvotes(postId)
+	if err != nil {
+		log.Print(err)
+	}
+	return
+}
+
+func (s *Store) PostCreateDownvote(userId, postId int) (downvotes int, err error) {
+	_, err = s.db.Exec("INSERT INTO post_downvote (user_id, post_id) VALUES (?, ?)", userId, postId)
+	if err != nil {
+		log.Print(err)
+	}
+	downvotes, err = s.PostGetDownvotes(postId)
+	if err != nil {
+		log.Print(err)
+	}
+	return
 }

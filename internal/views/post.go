@@ -8,7 +8,7 @@ import (
 
 type PostData struct {
 	LoggedIn bool
-	Post     *store.UserPostGet
+	Post     *store.PostGet
 }
 
 func Post(w http.ResponseWriter, data *PostData, statusCode int) {

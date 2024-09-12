@@ -8,7 +8,7 @@ CREATE TABLE user(
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE TABLE user_post(
+CREATE TABLE post(
   id INTEGER PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
@@ -19,107 +19,107 @@ CREATE TABLE user_post(
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE TABLE user_post_upvote(
+CREATE TABLE post_upvote(
   id INTEGER PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  post_id INTEGER NOT NULL REFERENCES user_post(id) ON DELETE CASCADE,
+  post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
   UNIQUE(user_id, post_id)
 );
 
-CREATE TABLE user_post_downvote(
+CREATE TABLE post_downvote(
   id INTEGER PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  post_id INTEGER NOT NULL REFERENCES user_post(id) ON DELETE CASCADE,
+  post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
   UNIQUE(user_id, post_id)
 );
 
-CREATE TABLE user_post_comment(
+CREATE TABLE comment(
   id INTEGER PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  post_id INTEGER NOT NULL REFERENCES user_post(id) ON DELETE CASCADE,
-  parent INTEGER REFERENCES user_post_comment(id) ON DELETE CASCADE,
+  post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE,
+  parent INTEGER REFERENCES comment(id) ON DELETE CASCADE,
   text TEXT NOT NULL,
   score INTEGER NOT NULL DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE TABLE user_post_comment_upvote(
+CREATE TABLE comment_upvote(
   id INTEGER PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  post_comment_id INTEGER NOT NULL REFERENCES user_post(id) ON DELETE CASCADE,
+  comment_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  UNIQUE(user_id, post_comment_id)
+  UNIQUE(user_id, comment_id)
 );
 
-CREATE TABLE user_post_comment_downvote(
+CREATE TABLE comment_downvote(
   id INTEGER PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-  post_comment_id INTEGER NOT NULL REFERENCES user_post(id) ON DELETE CASCADE,
+  comment_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  UNIQUE(user_id, post_comment_id)
+  UNIQUE(user_id, comment_id)
 );
 
--- Trigger to insert a 'user_post_upvote' on behalf of the user that created a 'user_post'.
+-- Trigger to insert a 'post_upvote' on behalf of the user that created a 'post'.
 
-CREATE TRIGGER user_post_insert AFTER INSERT ON user_post
+CREATE TRIGGER post_insert AFTER INSERT ON post
   BEGIN
-    INSERT INTO user_post_upvote (user_id, post_id) VALUES (NEW.user_id, NEW.id);
+    INSERT INTO post_upvote (user_id, post_id) VALUES (NEW.user_id, NEW.id);
   END;
 
--- Triggers for inserts and deletes on 'user_post_upvote' and 'user_post_downvote'.
+-- Triggers for inserts and deletes on 'post_upvote' and 'post_downvote'.
 
-CREATE TRIGGER user_post_upvote_insert AFTER INSERT ON user_post_upvote FOR EACH ROW
+CREATE TRIGGER post_upvote_insert AFTER INSERT ON post_upvote FOR EACH ROW
   BEGIN
-    UPDATE user_post SET score = score + 1 WHERE id = NEW.post_id;
-    DELETE FROM user_post_downvote WHERE post_id = NEW.post_id;
+    UPDATE post SET score = score + 1 WHERE id = NEW.post_id;
+    DELETE FROM post_downvote WHERE post_id = NEW.post_id;
   END;
 
-CREATE TRIGGER user_post_upvote_delete DELETE ON user_post_upvote
+CREATE TRIGGER post_upvote_delete DELETE ON post_upvote
   BEGIN
-    UPDATE user_post SET score = score - 1 WHERE id = OLD.post_id;
+    UPDATE post SET score = score - 1 WHERE id = OLD.post_id;
   END;
 
-CREATE TRIGGER user_post_downvote_insert INSERT ON user_post_downvote
+CREATE TRIGGER post_downvote_insert INSERT ON post_downvote
   BEGIN
-    UPDATE user_post SET score = score - 1 WHERE id = NEW.post_id;
-    DELETE FROM user_post_upvote WHERE user_id = NEW.user_id AND post_id = NEW.post_id;
+    UPDATE post SET score = score - 1 WHERE id = NEW.post_id;
+    DELETE FROM post_upvote WHERE user_id = NEW.user_id AND post_id = NEW.post_id;
   END;
 
-CREATE TRIGGER user_post_downvote_delete DELETE ON user_post_downvote
+CREATE TRIGGER post_downvote_delete DELETE ON post_downvote
   BEGIN
-    UPDATE user_post SET score = score + 1 WHERE id = OLD.post_id;
+    UPDATE post SET score = score + 1 WHERE id = OLD.post_id;
   END;
 
--- Trigger to insert a 'user_post_comment_upvote' on behalf of the user that created a 'user_post_comment'.
+-- Trigger to insert a 'comment_upvote' on behalf of the user that created a 'comment'.
 
-CREATE TRIGGER user_post_comment_insert AFTER INSERT ON user_post_comment
+CREATE TRIGGER comment_insert AFTER INSERT ON comment
   BEGIN
-    INSERT INTO user_post_comment_upvote (user_id, post_comment_id) VALUES (NEW.user_id, NEW.id);
-    UPDATE user_post SET comments = comments + 1 WHERE id = NEW.post_id;
+    INSERT INTO comment_upvote (user_id, comment_id) VALUES (NEW.user_id, NEW.id);
+    UPDATE post SET comments = comments + 1 WHERE id = NEW.post_id;
   END;
 
--- Triggers for inserts and deletes on 'user_post_comment_upvote' and 'user_post_comment_downvote'.
+-- Triggers for inserts and deletes on 'comment_upvote' and 'comment_downvote'.
 
-CREATE TRIGGER user_post_comment_upvote_insert INSERT ON user_post_comment_upvote
+CREATE TRIGGER comment_upvote_insert INSERT ON comment_upvote
   BEGIN
-    UPDATE user_post_comment SET score = score + 1 WHERE id = NEW.post_comment_id;
-    DELETE FROM user_post_comment_downvote WHERE user_id = NEW.user_id AND post_id = NEW.post_id;
+    UPDATE comment SET score = score + 1 WHERE id = NEW.comment_id;
+    DELETE FROM comment_downvote WHERE user_id = NEW.user_id AND post_id = NEW.post_id;
   END;
 
-CREATE TRIGGER user_post_comment_upvote_delete DELETE ON user_post_comment_upvote
+CREATE TRIGGER comment_upvote_delete DELETE ON comment_upvote
   BEGIN
-    UPDATE user_post_comment SET score = score - 1 WHERE id = OLD.post_comment_id;
+    UPDATE comment SET score = score - 1 WHERE id = OLD.comment_id;
   END;
 
-CREATE TRIGGER user_post_comment_downvote_insert INSERT ON user_post_comment_downvote
+CREATE TRIGGER comment_downvote_insert INSERT ON comment_downvote
   BEGIN
-    UPDATE user_post_comment SET score = score - 1 WHERE id = NEW.post_comment_id;
-    DELETE FROM user_post_comment_upvote WHERE user_id = NEW.user_id AND post_id = NEW.post_id;
+    UPDATE comment SET score = score - 1 WHERE id = NEW.comment_id;
+    DELETE FROM comment_upvote WHERE user_id = NEW.user_id AND post_id = NEW.post_id;
   END;
 
-CREATE TRIGGER user_post_comment_downvote_delete DELETE ON user_post_comment_downvote
+CREATE TRIGGER comment_downvote_delete DELETE ON comment_downvote
   BEGIN
-    UPDATE user_post_comment SET score = score + 1 WHERE id = OLD.post_comment_id;
+    UPDATE comment SET score = score + 1 WHERE id = OLD.comment_id;
   END;
